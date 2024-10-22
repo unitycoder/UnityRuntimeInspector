@@ -1,6 +1,18 @@
-﻿{
+{
     "name": "RuntimeInspector.Runtime",
+    "rootNamespace": "",
     "references": [
-        "Unity.InputSystem"
-    ]
+        "Unity.InputSystem",
+        "Unity.TextMeshPro",
+        "HighlightPlus"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
 }

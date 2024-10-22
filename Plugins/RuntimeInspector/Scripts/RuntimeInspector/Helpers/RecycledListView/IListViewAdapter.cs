@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.EventSystems;
 
 namespace RuntimeInspectorNamespace
 {
@@ -10,6 +11,6 @@ namespace RuntimeInspectorNamespace
 		RecycledListItem CreateItem( Transform parent );
 
 		void SetItemContent( RecycledListItem item );
-		void OnItemClicked( RecycledListItem item );
+		void OnItemClicked( RecycledListItem item, PointerEventData eventData);
 	}
 }

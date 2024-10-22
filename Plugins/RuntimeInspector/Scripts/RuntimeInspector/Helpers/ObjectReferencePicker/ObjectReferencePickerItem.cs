@@ -68,7 +68,7 @@ namespace RuntimeInspectorNamespace
 		private void Awake()
 		{
 			texturePreviewLayoutElement = texturePreview.GetComponent<LayoutElement>();
-			GetComponent<PointerEventListener>().PointerClick += ( eventData ) => OnClick();
+			GetComponent<PointerEventListener>().PointerClick += ( eventData ) => OnClick(eventData);
 		}
 
 		public void SetContent( object reference, string displayName )
