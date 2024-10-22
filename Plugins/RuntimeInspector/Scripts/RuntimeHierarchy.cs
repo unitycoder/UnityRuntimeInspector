@@ -49,6 +49,9 @@ namespace RuntimeInspectorNamespace
         private float nextHierarchyRefreshTime = -1f;
         private float nextObjectNamesRefreshTime = -1f;
         private float nextSearchRefreshTime = -1f;
+        [Tooltip("Searching with 1 char is slow..")]
+        public int minSearchLen = 2;
+
 
         [Space]
         [SerializeField]
@@ -137,6 +140,9 @@ namespace RuntimeInspectorNamespace
                 }
             }
         }
+
+        [Tooltip("The root Transform of the hierarchy to get")]
+        public Transform rootTransform;
 
         [SerializeField, UnityEngine.Serialization.FormerlySerializedAs("exposedScenes")]
         private string[] exposedUnityScenesSubset;
@@ -467,8 +473,7 @@ namespace RuntimeInspectorNamespace
 
         private void Initialize()
         {
-            if (initialized)
-                return;
+            if (initialized) return;
 
             initialized = true;
 
@@ -514,8 +519,9 @@ namespace RuntimeInspectorNamespace
                     OnSceneLoaded(SceneManager.GetSceneAt(i), LoadSceneMode.Single);
             }
 
-            if (ExposeDontDestroyOnLoadScene)
-                OnSceneLoaded(GetDontDestroyOnLoadScene(), LoadSceneMode.Single);
+            if (ExposeDontDestroyOnLoadScene) OnSceneLoaded(GetDontDestroyOnLoadScene(), LoadSceneMode.Single);
+
+            UpdateOnce();
         }
 
         private void OnDestroy()
@@ -562,19 +568,8 @@ namespace RuntimeInspectorNamespace
         }
 #endif
 
-        protected override void Update()
+        protected void UpdateOnce()
         {
-            base.Update();
-
-            float time = Time.realtimeSinceStartup;
-            if (time > nextHierarchyRefreshTime)
-                Refresh();
-            if (m_isInSearchMode && time > nextSearchRefreshTime)
-                RefreshSearchResults();
-
-            if (isListViewDirty)
-                RefreshListView();
-
             if (time > nextObjectNamesRefreshTime)
             {
                 nextObjectNamesRefreshTime = time + m_objectNamesRefreshInterval;
@@ -593,6 +588,18 @@ namespace RuntimeInspectorNamespace
 
                 shouldRecalculateContentWidth = true;
             }
+        }
+
+        float time;
+        protected override void Update()
+        {
+            time = Time.realtimeSinceStartup;
+
+            base.Update();
+
+            if (time > nextHierarchyRefreshTime) Refresh();
+            if (m_isInSearchMode && time > nextSearchRefreshTime) RefreshSearchResults();
+            if (isListViewDirty) RefreshListView();
 
             if (m_showHorizontalScrollbar && shouldRecalculateContentWidth)
             {
@@ -668,8 +675,7 @@ namespace RuntimeInspectorNamespace
                 pressedDrawerActivePointer = null;
             }
 
-            if (AutoScrollSpeed != 0f)
-                scrollView.verticalNormalizedPosition = Mathf.Clamp01(scrollView.verticalNormalizedPosition + AutoScrollSpeed * Time.unscaledDeltaTime / totalItemCount);
+            if (AutoScrollSpeed != 0f) scrollView.verticalNormalizedPosition = Mathf.Clamp01(scrollView.verticalNormalizedPosition + AutoScrollSpeed * Time.unscaledDeltaTime / totalItemCount);
         }
 
         public void Refresh()
@@ -1466,8 +1472,9 @@ namespace RuntimeInspectorNamespace
 
         private void OnSearchTermChanged(string search)
         {
-            if (search != null)
-                search = search.Trim();
+            if (search != null) search = search.Trim();
+
+            if (search.Length < minSearchLen) return;
 
             if (string.IsNullOrEmpty(search))
             {
@@ -1509,16 +1516,13 @@ namespace RuntimeInspectorNamespace
 
         private void OnSceneLoaded(Scene arg0, LoadSceneMode arg1)
         {
-            if (!ExposeUnityScenes || (arg0.buildIndex >= 0 && exposedUnityScenesSubset != null && exposedUnityScenesSubset.Length > 0 && System.Array.IndexOf(exposedUnityScenesSubset, arg0.name) == -1))
-                return;
+            if (!ExposeUnityScenes || (arg0.buildIndex >= 0 && exposedUnityScenesSubset != null && exposedUnityScenesSubset.Length > 0 && System.Array.IndexOf(exposedUnityScenesSubset, arg0.name) == -1)) return;
 
-            if (!arg0.IsValid())
-                return;
+            if (!arg0.IsValid()) return;
 
             for (int i = 0; i < sceneData.Count; i++)
             {
-                if (sceneData[i] is HierarchyDataRootScene && ((HierarchyDataRootScene)sceneData[i]).Scene == arg0)
-                    return;
+                if (sceneData[i] is HierarchyDataRootScene && ((HierarchyDataRootScene)sceneData[i]).Scene == arg0) return;
             }
 
             HierarchyDataRootScene data = new HierarchyDataRootScene(this, arg0);
